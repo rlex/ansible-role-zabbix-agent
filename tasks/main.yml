@@ -1,0 +1,92 @@
+- name: "Install the correct repository"
+  include_tasks: "debian.yml"
+  when: ansible_os_family == "Debian"
+
+- name: "Create zabbix agent directory structure"
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /etc/zabbix/zabbix_agent_plugins.d
+    - /etc/zabbix/zabbix_agent_userparameters.d
+    - /etc/zabbix/scripts.d
+
+- name: "Delete old zabbix agent folders structure"
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/zabbix/zabbix_agentd.d
+
+- name: "Install zabbix agent encryption file"
+  template:
+    src: zabbix_agentd.psk.j2
+    dest: /etc/zabbix/zabbix_agentd.psk
+    owner: zabbix
+    group: zabbix
+    mode: 0640
+  notify: "restart zabbix-agent"
+
+- name: "Install zabbix agent config file"
+  template:
+    src: zabbix_agentd.conf.j2
+    dest: /etc/zabbix/zabbix_agentd.conf
+    owner: zabbix
+    group: zabbix
+    mode: 0640
+  notify: "restart zabbix-agent"
+
+- name: "Install zabbix agent pcp plugin config file"
+  template:
+    src: zabbix_pcp_plugin.conf.j2
+    dest: /etc/zabbix/zabbix_agent_plugins.d/zabbix_pcp_plugin.conf
+    owner: zabbix
+    group: zabbix
+    mode: 0640
+  notify: "restart zabbix-agent"
+  when: zabbix_agent_pcp
+
+- name: "Install zabbix agent pcp discovery binary"
+  copy:
+    src: scripts/pcp-discovery.sh
+    dest: /etc/zabbix/scripts.d/pcp-discovery.sh
+    owner: zabbix
+    group: zabbix
+    mode: 0760
+  notify: "restart zabbix-agent"
+  when: zabbix_agent_pcp
+
+- name: "Install additional userparameters for zabbix-agent"
+  copy:
+    src: userparameters/{{ item }}
+    dest: /etc/zabbix/zabbix_agent_userparameters.d/{{ item }}
+    owner: zabbix
+    group: zabbix
+    mode: 0760
+  loop: "{{ zabbix_agent_userparameters }}"
+  when: zabbix_agent_userparameters is defined
+  notify: "restart zabbix-agent"
+
+- name: "Install additional scripts for zabbix-agent"
+  copy:
+    src: scripts/{{ item }}
+    dest: /etc/zabbix/scripts.d/{{ item }}
+    owner: zabbix
+    group: zabbix
+    mode: 0760
+  loop: "{{ zabbix_agent_scripts }}"
+  when: zabbix_agent_scripts is defined
+  notify: "restart zabbix-agent"
+
+- name: ensure zabbix-agent is started
+  service:
+    name: zabbix-agent
+    state: started
+
+#https://github.com/ansible/ansible/issues/22303
+- name: ensure zabbix-agent is enabled on boot
+  service:
+    name: zabbix-agent
+    state: started
+    enabled: yes
+    use: service

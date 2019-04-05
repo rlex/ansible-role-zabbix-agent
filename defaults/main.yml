@@ -1,0 +1,19 @@
+---
+zabbix_agent_pidfile: /var/run/zabbix/zabbix_agentd.pid
+zabbix_agent_logfile: /var/log/zabbix/zabbix_agentd.log
+zabbix_agent_logfilesize: 0
+zabbix_agent_server: "{{ zabbix_server_address }}"
+zabbix_agent_serveractive: "{{ zabbix_agent_server }}"
+zabbix_agent_hostname: "{{ inventory_hostname }}"
+zabbix_agent_branch: 4.2
+zabbix_agent_timeout: 30
+zabbix_agent_tlsconnect: psk
+zabbix_agent_tlsaccept: psk
+zabbix_agent_tlspskfile: /etc/zabbix/zabbix_agentd.psk
+zabbix_agent_tlspskidentity: zbxcrypto
+zabbix_agent_include:
+ - /etc/zabbix/zabbix_agent_plugins.d/
+ - /etc/zabbix/zabbix_agent_userparameters.d/
+zabbix_agent_userparameters:
+ - userparameter_fping.conf
+zabbix_agent_pcp: true

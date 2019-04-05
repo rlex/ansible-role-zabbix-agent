@@ -1,0 +1,53 @@
+- name: Download zabbix apt key
+  apt_key:
+    url: "http://repo.zabbix.com/zabbix-official-repo.key"
+    state: present
+  tags:
+    - zabbix-agent
+    - packages
+
+- name: Add zabbix repository
+  apt_repository:
+    repo: "deb http://repo.zabbix.com/zabbix/{{ zabbix_agent_branch }}/{{ ansible_distribution|lower }} {{ ansible_lsb.codename }} main"
+    filename: "zabbix"
+    state: present
+  tags:
+    - zabbix-agent
+    - packages
+  when: ansible_lsb is defined
+
+- name: "Install zabbix-agent package"
+  apt:
+    name: zabbix-agent
+    state: latest
+  notify: "restart zabbix-agent"
+  tags:
+  - zabbix-agent
+  - packages
+
+- name: Download performance co-pilot key
+  apt_key:
+    url: "https://bintray.com/user/downloadSubjectPublicKey?username=pcp"
+    state: present
+  tags:
+    - pcp
+    - packages
+  when: zabbix_agent_pcp
+
+- name: Add performance co-pilot repository
+  apt_repository:
+    repo: "deb https://dl.bintray.com/pcp/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main"
+    filename: "pcp"
+    state: present
+  tags:
+    - pcp
+    - packages
+  when: ansible_lsb is defined and zabbix_agent_pcp
+
+- name: Install performance co-pilot
+  apt:
+    name:
+      - pcp
+      - pcp-export-zabbix-agent
+    state: latest
+  when: zabbix_agent_pcp
