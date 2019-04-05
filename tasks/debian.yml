@@ -47,7 +47,18 @@
 - name: Install performance co-pilot
   apt:
     name:
+      - libpcp-gui2
+      - libpcp-import1
+      - libpcp-mmv1
+      - libpcp-pmda-perl
+      - libpcp-pmda3
+      - libpcp-trace2
+      - libpcp-web1
+      - libpcp3
       - pcp
+      - pcp-conf
       - pcp-export-zabbix-agent
+      - pcp-gui
+      - python3-pcp
     state: latest
   when: zabbix_agent_pcp
