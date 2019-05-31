@@ -58,7 +58,6 @@
       - pcp
       - pcp-conf
       - pcp-export-zabbix-agent
-      - pcp-gui
       - python3-pcp
     state: latest
   when: zabbix_agent_pcp
