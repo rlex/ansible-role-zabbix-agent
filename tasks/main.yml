@@ -11,12 +11,22 @@
     - /etc/zabbix/zabbix_agent_userparameters.d
     - /etc/zabbix/scripts.d
 
+- name: "Create zabbix log directory structure"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: zabbix
+    group: zabbix
+  loop:
+    - /var/log/zabbix
+
 - name: "Delete old zabbix agent folders structure"
   file:
     path: "{{ item }}"
     state: absent
   loop:
     - /etc/zabbix/zabbix_agentd.d
+    - /var/log/zabbix-agent
 
 - name: "Install zabbix agent encryption file"
   template:
